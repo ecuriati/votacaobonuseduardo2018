@@ -1,0 +1,72 @@
+pragma  solidity 0.4.25;
+
+/**
+@title VotacaoBonusEduardo2018
+@notice Contrato Inteligente para armazenar a votação de Bônus
+@author Eduardo
+*/
+contract VotacaoBonusEduardo2018 {
+
+    struct Criterio {
+        string texto;
+        address proponente;
+        uint numeroDeVotos;
+        uint quotaMinimaParaAprovacao;
+        bool existe;
+        mapping(address=>Socio) quemVotou;
+    }
+
+    struct Socio {
+        address conta;
+        string identificationID;
+        uint quotaDeVotos;
+        bool existe;
+        bool votou;
+    }
+    
+    mapping(address=>Socio) sociosDoEscritorio;
+    Criterio[] criteriosDeAvaliacao;
+    
+    constructor () public {
+        Socio memory socio1 = Socio(0xca35b7d915458ef540ade6068dfe2f44e8fa733c, "Fulano", 35, true, false);
+        sociosDoEscritorio[socio1.conta] = socio1;
+        Socio memory socio2 = Socio(0x14723a09acff6d2a60dcdf7aa4aff308fddc160c, "Ciclano", 30, true, false);
+        sociosDoEscritorio[socio2.conta] = socio2;
+        Socio memory socio3 = Socio(0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db, "Tício", 25, true, false);
+        sociosDoEscritorio[socio3.conta] = socio3;
+        Socio memory socio4 = Socio(0x583031d1113ad414f02576bd6afabfb302140225, "Mévio", 10, true, false);
+        sociosDoEscritorio[socio4.conta] = socio4;
+        Criterio memory criterio1 = Criterio("Publicação de, no mínimo, dois artigos jurídicos", 0xca35b7d915458ef540ade6068dfe2f44e8fa733c, 35, 51, true);
+        criteriosDeAvaliacao.push(criterio1);
+        Criterio memory criterio2 = Criterio("Comparecimento a, no mínimo, dois eventos de grande porte", 0x14723a09acff6d2a60dcdf7aa4aff308fddc160c, 30, 51, true);
+        criteriosDeAvaliacao.push(criterio2);
+        Criterio memory criterio3 = Criterio("Captação de, pelos menos, um cliente", 0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db, 25, 51, true);
+        criteriosDeAvaliacao.push(criterio3);
+        Criterio memory criterio4 = Criterio("Ter cursado ou estar cursando pós-graduação, mestrado ou doutorado", 0x583031d1113ad414f02576bd6afabfb302140225, 10, 51, true);
+        criteriosDeAvaliacao.push(criterio4);
+    }
+    
+    function votar(uint intencaoDeVoto, uint indiceCriterioASerVotado) {
+        Socio votante = sociosDoEscritorio[msg.sender];
+        require(votante.existe);
+        require(criterioQueEstaSendoVotado.quemVotou[msg.sender].votou == false);
+        Criterio criterioQueEstaSendoVotado = criteriosDeAvaliacao[indiceCriterioASerVotado];
+        if (intencaoDeVoto > 0) {
+            criterioQueEstaSendoVotado.numeroDeVotos = criterioQueEstaSendoVotado.numeroDeVotos+1;
+        }
+        votante.votou = true;
+        criterioQueEstaSendoVotado.quemVotou[msg.sender] = votante;
+    }
+    
+    function resultado() public view returns (bool) {
+        bool foiAprovado = false;
+        for(uint i=0; i<criteriosDeAvaliacao.length; i++) {
+            Criterio criterioQueEstaSendoAvaliado = criteriosDeAvaliacao[i];
+            if (criterioQueEstaSendoAvaliado.numeroDeVotos<criterioQueEstaSendoAvaliado.quotaMinimaParaAprovacao) {
+                return foiAprovado;
+            }
+        }
+        foiAprovado = true;
+        return foiAprovado;
+    }
+}
